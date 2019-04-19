@@ -8,9 +8,9 @@ output:
       collapsed: true
       smooth_scroll: false
 params:
-  name: ["阿花","阿明"]
-  id: [710761001,710661002]
-  group: "team1"
+  name: ["黃鉦翔","林應廷","張又方","劉婷軒"]
+  id: [710761121,710761129,710761103,710761130]
+  group: "teamG"
   url: ""
 ---
 請依狀況更改上面的name,id及group（分別代表組員姓名，學號及組號），但請勿更改下面三行的設定。  
