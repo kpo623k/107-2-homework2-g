@@ -1,0 +1,77 @@
+---
+title: "作業2"
+output: 
+  html_document: 
+    toc: true
+    toc_depth: 1
+    number_sections: false
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+params:
+  name: ["黃鉦翔","林應廷","劉婷軒","張又方"]
+  id: [710761121,710661129,710761130,710761103]
+  group: "teamG"
+  url: ""
+---
+
+
+***
+
+姓名：`r params$name`  
+學號：`r params$id`  
+組號：`r params$group`  
+網頁：`r params$url` 
+
+***
+
+```{r setup, include=FALSE}
+
+```
+
+## 1-1
+$Y=Y_-p+{\beta}^\star P$
+$E(Y|P)= E(Y_-p)+{\beta}^\star p|p)$
+$=E[E(Y_-p|rincome)+\tilde{\epsilon}|p]+{\beta}^{\star}p$
+$=E(2+3rincome+\tilde{\epsilon}|p)+{\beta}^{\star}p$
+$=2+3E(rincome|p)+E(\tilde{\epsilon}|p)+{\beta}^{\star}p$
+$=2+{\beta}^{\star}p$ 
+
+其中rincome ⊥ p 則 $E(rincome|p=0$
+$\tilde{\epsilon}$⊥ p 則 $E(\tilde{\epsilon}|p)=0$
+
+## 1-2
+
+$E(Y|P)=E(2+3rincome|P)+E(\tilde{\epsilon}|P)+{\beta^\star}P=E(2+3rincome|P)+0+{\beta^\star}P=2+3E(rincome|P)+{\beta^\star}P=2+3(0.5+P)+{\beta^\star}P=3.5+(3+{\beta^\star})P$
+
+$$E(Y|P)中P的係數不等於{\beta^\star}$$
+$$E(Y|P)=E(2+3rincome|P)+E(\tilde{\epsilon}|P)+{\beta^\star}P=E(2+3rincome|P)+0+{\beta^\star}P
+=2+3E(rincome|P)+{\beta^\star}P=2+3(0.5+P)+{\beta^\star}P=3.5+(3+{\beta^\star})P$$
+
+## 1-3
+
+
+## 1-4
+
+$E(Y|P_z,rincome)$ \
+$=E(Y_{-p}+\beta^*P|P_z,rincome)$ \
+$=E[E(Y_{-p}|rincome)+\tilde{\epsilon}|P_z,rincome]+E(\beta^*P|P_z,rincome)$ \
+$=2+3rincome+\beta^*P_z$ \
+                
+其中: 
+$E(\tilde\epsilon|P_z,rincome)$ \
+$=E[Y_{-p}-E(Y_{-p}|rincome)|P_z,rincome]$ \ $=E(Y_{-p}|P_z,rincome)-E(Y_{-p}|P_z,rincome)=0$ \
+                             
+由此過程可以得知，$E(Y|P_z,rincome)$其中$P_z$的係數為$\beta^*$
+
+## 1-5
+
+$E(Y|P,rincome,Z)=E(Y_{-p}+{\beta}^{\star}p|p,rincome,Z)$
+$=E[E(Y_{-p}|rincome)+\tilde{\epsilon}|p,rincome,Z]+\beta^{\star}p$
+$=2+3rincome+E(\tilde{\epsilon}|p,rincome,Z)+\beta^{\star}p$
+$=2+3erincome+\beta^{\star}$
+
+其中$E(\tilde{\epsilon}|p,rincome,Z)$
+$=E[Y_{-p}-E(Y_{-p}|rincome|p,rincome,Z)]$
+$=E[Y_{-p}|p,rincome,Z]-E(Y_-p|rincome)|p,rincome,Z]$
+$=E(Y_{-p}|p,rincome,Z)-E(Y_-p|p,rincome,Z)=0$
