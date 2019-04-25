@@ -49,10 +49,10 @@ $$children=\beta_{0}+\beta_{1}educ+\beta_{2}age+\beta_{3}age^{2}+u$$
 by OLS, and interpret the estimates.
 
 ```{r ans11}
-library(sandwich)
 library(dplyr)
-library(lmtest)
-lm(children ~ educ+age+age^2,fertil2)
+fertil2 %>%
+  lm(children ~ educ + age +agesq, data=.) ->model1
+summary(model1)
 ```
 
 
@@ -61,8 +61,9 @@ The variable frsthalf is a dummy variable equal to one if the woman was born dur
 
 
 ```{r ans12}
-lm(children-educ-age-age^2 ~ frsthalf, fertil2)->Model1
-coeftest(Model1,vcov. = vcovHC, type="HC1")->Model_coeftest
+fertil2 %>%
+  lm(educ ~ frsthalf + age +agesq, data=.) ->model2
+summary(model2)
 ```
 
 ## 1.3
@@ -70,14 +71,25 @@ Estimate the model from part 1.1 by using frsthalf as an IV for educ. Compare th
 
 
 ```{r ans13}
-
+library(AER)
+fertil2 %>%
+  ivreg(children ~ educ + age +agesq | frsthalf + age + agesq, data=.) -> model3
+summary(model3)
 ```
 
 ## 1.4
 Add the binary variables electric, tv, and bicycle to the model and assume that these are exogenous. Estimate the equation by OLS and TSLS and compare the estimated coefficients on educ. Interpret the coefficient on tv and explain why television ownership has a negative effect on fertility.
 
 ```{r ans14}
+library(dplyr)
+library(AER)
+fertil2 %>%
+  ivreg(children ~  educ + age +agesq + electric + tv +bicycle | frsthalf + age + agesq + electric + tv +bicycle, data=.) -> model4
+summary(model4)
 
+fertil2 %>%
+  lm(children ~  educ + age +agesq + electric + tv +bicycle, data = .) ->model5
+summary(model5)
 ```
 
 
@@ -86,7 +98,23 @@ Continue from 1.4, conduct Hausman test to see if OLS is valid for the study und
 
 
 ```{r ans15}
+library(AER)
+model4 <- ivreg(
+  children ~  educ + age +agesq + electric + tv +bicycle| frsthalf + age + agesq + electric + tv +bicycle, data=fertil2
+   ) 
 
+model5 <- lm(
+  children ~  educ + age +agesq + electric + tv +bicycle, data = fertil2
+  )
+
+summary(model4, vcov = sandwich, diagnostics = TRUE, df=Inf) -> model4_tests
+summary(model5, vcov = sandwich, diagnostics = TRUE, df=Inf) -> model5_tests
+
+sandwich_HC1<-function(x,adjust=TRUE){
+  sandwich(x,adjust=adjust)
+}
+summary(model5, vcov = sandwich_HC1, diagnostics = TRUE, df=Inf) -> model5_tests_hc1
+model4_tests
 ```
 
 ## 1.6
@@ -105,7 +133,10 @@ Are frsthalf and catholic weak IVs?
 
 
 ```{r ans18}
-
+library(dplyr)
+fertil2 %>%
+  lm(educ ~ catholic + frsthalf + age +agesq, data=.) ->model6
+summary(model6)
 ```
 
 # 2 複迴歸與工具變數
@@ -132,6 +163,17 @@ $$Y=Y_{-p}+\beta^* P$$
 
 說明此時$E(Y|P)$中P的係數即為$\beta^*$.
 
+$Y=Y_{-p}+{\beta}^\star P$ \
+ $=E(Y|P)= E(Y_{-p})+{\beta}^\star P|P)$ \
+ $=E[E(Y_{-p}|rincome)+\tilde{\epsilon}|P]+{\beta}^{\star}P$ \
+ $=E(2+3rincome+\tilde{\epsilon}|P)+{\beta}^{\star}P$ \
+ $=2+3E(rincome|P)+E(\tilde{\epsilon}|P)+{\beta}^{\star}P$ \
+ $=2+\beta^{\star}P$ \
+ 其中$rincome ⊥ P$則 $E(rincome|P)=0$ \
+ $\tilde{\epsilon}⊥ P則 E(\tilde{\epsilon}|P)=0$ \
+ 
+ 由此過程可以得知，$E(Y|P)$其中$P$的係數為$\beta^*$
+
 ## 2.2 立足點情境A.2
 
 此情境包含兩部份：
@@ -144,6 +186,20 @@ $$Y=Y_{-p}+\beta^* P$$
 
 說明此時$E(Y|P)$中P的係數「不」為$\beta^*$，但$E(Y|P,rincome)$中P的係數為$\beta^*$。
 
+$E(Y|P)=E(2+3rincome|P)+E(\tilde{\epsilon}|P)+{\beta^\star}P$ \
+      $=E(2+3rincome|P)+0+{\beta^\star}P$ \
+      $=2+3E(rincome|P)+{\beta^\star}P$ \
+      $=2+3(0.5+P)+{\beta^\star}P$ \
+      $=3.5+(3+{\beta^\star})P$ \
+      由此過程可以得知，$E(Y|P)中P的係數不等於{\beta^\star}$ \
+ \
+
+$E(Y|P,rincome)=E(Y_{-P}+{\beta^\star}P|P,rincome)$ \
+              $=E[E(Y_{-P}|rincome)+\tilde{\epsilon}|P,rincome]+{\beta^\star}P$ \
+              $=E(Y_{-P}|rincome)+E(\tilde{\epsilon}|P,rincome)+{\beta^\star}P$ \
+              $=2+3rincome+0+{\beta^\star}P$ \
+              由此過程可以得知，$E(Y|P,rincome) 中P的係數為{\beta^\star}$
+              
 ## 2.3 立足點情境A.3
 
 考慮以下兩個情境條件：
@@ -155,6 +211,22 @@ $$Y=Y_{-p}+\beta^* P$$
 即P與$Y_{-p}$有關連：此關連性可來自於【A.2.2】中P與rincome的關連，也可來自於它與「非價格、非所得」引起的銷量之關連（即與$\tilde{\epsilon}$相關部份）
 
 若$E(\tilde{\epsilon}|P)=0.5+2P$，說明不論使用$E(Y|P)$或$E(Y|P,rincome)$，其P之係數都不會是$\beta^*$
+
+$E(Y|P)=E(Y_{-p}+\beta^*P|P)$ \
+      $=E[E(Y_{-p}|rincome)+\tilde{\epsilon}|P]+\beta^*P$ \
+      $=E(2+3rincome|P)+E(\tilde{\epsilon}|P)+\beta^*P$ \
+      $=2+3E(rincome|P)+0.5+2P+\beta^*P$ \
+      $=2+3(0.5+P)+0.5+2P+\beta^*P$ \
+      $=4+(5+\beta^*)P$  \
+      由此過程可以得知，其中$5+\beta^*$不等於$\beta^*$ \
+ \
+$E(Y|P,rincome)=E(Y_{-p}+\beta^*P|P,rincome)$ \
+              $=E(E(Y_{-p}|rincome)+\tilde{\epsilon}|P,rincome]+\beta^*P$ \
+              $=2+3rincome+E(\tilde{\epsilon}|P,rincome)+\beta^*P$ \
+              $=2+3rincome+0.5+2P+\beta^*P$ \
+              $=2.5+3rincome+(2+\beta^*)P$  \
+              由此過程可以得知，其中$2+\beta^*$不等於$\beta^*$
+              
 
 ## 2.4 立足點情境A.3+效應情境B.1：TSLS
 
@@ -170,6 +242,19 @@ $$Y=Y_{-p}+\beta^* P$$
 
 若$E(\tilde{\epsilon}|P)=0.5+2P$，說明使用$E(Y|P_z,rincome)$其中$P_z$的係數會是$\beta^*$
 
+若$E(\tilde{\epsilon}|P)=0.5+2P$，說明使用$E(Y|P_z,rincome)$其中$P_z$的係數會是$\beta^*$
+
+$E(Y|P_z,rincome)=E(Y_{-p}+\beta^*P|P_z,rincome)$ \
+                $=E[E(Y_{-p}|rincome)+\tilde{\epsilon}|P_z,rincome]+E(\beta^*P|P_z,rincome)$ \
+                $=2+3rincome+\beta^*P_z$ \
+                
+其中:  \
+$E(\tilde\epsilon|P_z,rincome)=E[Y_{-p}-E(Y_{-p}|rincome)|P_z,rincome]$ \
+                             $=E(Y_{-p}|P_z,rincome)-E(Y_{-p}|P_z,rincome)=0$ \
+                             
+由此過程可以得知，$E(Y|P_z,rincome)$其中$P_z$的係數為$\beta^*$
+
+
 ## 2.5 立足點情境A.3+效應情境B.1：複迴歸
 
 承接上題情境，即
@@ -183,6 +268,18 @@ $$Y=Y_{-p}+\beta^* P$$
 說明使用$E(Y|P,rincome,z)$其中$P$的係
 數不會是$\beta^*$.
 
+$E(Y|P,rincome,Z)=E(Y_{-p}+{\beta}^{\star}p|p,rincome,Z)$ \
+                $=E[E(Y_{-p}|rincome)+\tilde{\epsilon}|p,rincome,Z]+\beta^{\star}p$ \
+                $=2+3rincome+E(\tilde{\epsilon}|p,rincome,Z)+\beta^{\star}p$ \
+                $=2+3erincome+\beta^{\star}$ \
+                \
+                
+                其中 \
+                $E(\tilde{\epsilon}|p,rincome,Z)=E[Y_{-p}-E(Y_{-p}|rincome|p,rincome,Z)]$ \
+                $=E[Y_{-p}|p,rincome,Z]-E(Y_-p|rincome)|p,rincome,Z]$ \
+                $=E(Y_{-p}|p,rincome,Z)-E(Y_-p|p,rincome,Z)=0$ \
+                由此過程可以得知，$E(Y|P,rincome,z)$其中$P$的係數不會為$\beta^*$
+                
 # 3. 替代變數
 
 有時資料並沒有所要的變數，但有其他具有代表性的替代變數（proxies）。如所要變數為「智商」，但智商沒有一定的衡量指標，我們常使用「IQ測驗成績」來代表智商，原因是我們認為它與「智商」有高度相關，也就是說：
