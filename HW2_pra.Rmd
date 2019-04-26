@@ -138,10 +138,13 @@ Are frsthalf and catholic weak IVs?
 
 
 ```{r ans18}
-library(dplyr)
-fertil2 %>%
-  lm(educ ~ catholic + frsthalf + age +agesq, data=.) ->model6
-summary(model6)
+library(AER)
+tsls_2iv <- ivreg(
+  children ~  educ + age +agesq | I(catholic+frsthalf) + age + agesq ,
+  data = fertil2
+  )
+summary(tsls_2iv, vcov = sandwich, diagnostics = TRUE, df=Inf) -> tsls_2iv_tests
+tsls_2iv_tests
 ```
 
 # 2 複迴歸與工具變數
@@ -307,8 +310,8 @@ $y_i=(\tilde{x_i}-\epsilon_i)\beta^{\star}+{\gamma}w_i+y_{-x,-w,i}$
 $if E(\epsilon_i|\tilde{x}_i)=\alpha_1+\alpha2\tilde{x}$ \
 $y_i=(\tilde{x}_i-(\alpha_1+\alpha_2\tilde{x})\beta^{\star}+\gamma w_i+y_{-x_i,-w_i}$
 $E(y_i|\tilde{x}_i,w_i)=(1+\alpha_2)\beta^{\star}\tilde{x}_i-\alpha_1\beta^{\star}+\gamma w_i+y_{-x_i,-w_i}$
-$ 除非 E(\epsilon_i|\tilde{x}_i)=0,\tilde{x}_i\perp\epsilon_i$
-$E(y_i|\tilde{x}_i,w_i)=\tilde{x}_i\beta^{\star}+\gamma w_i+y_{-x,-w,i}如果要有一致性的話需要\tilde{x}_i\perp\epsilon_i才會有$
+
+若令$E(\epsilon_i|\tilde{x}_i)=0$成立時，則可得到$E(y_i|\tilde{x}_i,w_i)=\tilde{x}_i\beta^{\star}+\gamma w_i+y_{-x,-w,i}$，故$\tilde{x}_i\perp\epsilon_i$，此時$\tilde{x}_i$的OLS估計式具有一致性
 
 ## 3.2
 
